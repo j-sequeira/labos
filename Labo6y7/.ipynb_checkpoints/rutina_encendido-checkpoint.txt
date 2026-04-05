@@ -1,0 +1,73 @@
+1)
+
+ssh muonrot@10.42.0.1
+
+psw: muonrot
+
+2) Configurar el encoder
+Ejecutar una sola vez y luego cerrar (Ctrl-c):
+
+python AS5600.py
+
+3) Asegurarse que la electrónica este funcionando bien, es decir que se pueda entrar con ssh:
+
+ssh root@10.0.0.101
+
+Dentro de la electrónica puedo correr un "ps" y las últimas líneas tendría que dar algo así:
+
+ 352 root      1624 S    /usr/sbin/crond -f
+  353 root      1616 S    /usr/sbin/telnetd -F -S
+  354 root      1620 S    /usr/sbin/ntpd -n
+  355 root      5248 S    /usr/local/bin/MdCfg -p 40000 amiga-daq
+  356 root       940 S    /usr/local/bin/MdSend -p 40001 -t 40001 amiga-daq
+  357 root      2948 S    /usr/local/bin/monitoring_client -p 40002 amiga-daq
+  358 root       884 S    /usr/local/bin/backpulse_client -p 40003 -t 60 amiga-daq
+  359 root      1612 S    /sbin/watchdog -t 5 -T 10 /dev/watchdog0
+  360 root       888 S    /usr/local/bin/ReadMuon -i amiga-daq
+  497 root      1296 R    dropbear -i -B -K 30
+  498 root      1628 S    -sh
+  501 root      1620 R    ps
+[root@muontumbler-m101:~]#
+
+4) Dentro de la electrónica correr:
+
+vi /etc/inittab
+
+insertar con i, escribir el #
+después esc, :wq enter
+comentar con un # al principio de la linea:
+
+#::respawn:/usr/local/bin/ReadMuon -i amiga-daq
+
+guardar el archivo
+
+5) correr:
+
+kill -HUP 1
+
+6) Desde la raspi mandar el ReadMuon:
+
+en MRT/
+
+scp -O ReadMuon root@10.0.0.101:/usr/local/bin
+
+7) Desde la electrónica descomentar borrando el # del inittab la linea que comentamos antes.
+
+vi /etc/inittab
+
+::respawn:/usr/local/bin/ReadMuon -i amiga-daq
+
+guardo
+
+8) correr:
+
+kill -HUP 1
+
+9) se puede correr un ps para ver si se esta ejecutando el programa ReadMuon
+
+10) Para ver en vivo, correr en la raspberry (la fecha a chequear, por ahora no está actualizando si no tiene internet y está en septiembre) (chequear la hora)
+
+cd /media/muonrot/93F0-FA15/muonrot/WriteMuon/YYYY/MM
+tail -f YYYY_MM_DD_06h00_muontumbler-m101.txt
+
+(basicamente, chequear cual es el archivo más reciente y correrlo con tail -f)
